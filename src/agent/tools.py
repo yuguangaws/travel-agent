@@ -2,7 +2,8 @@
 import requests
 from state import TravelState
 from settings import GAODE_API_KEY, GAODE_GEOCODE_URL, GAODE_DRIVING_URL, GAODE_POI_URL
-
+from hotel_agent import hotel_recommend_agent
+from settings import llm
 # ====================== 公共工具：地址转经纬度 ======================
 def geocode_address(address: str) -> str:
     """地址转经纬度"""
@@ -79,56 +80,19 @@ def call_traffic_node(state: TravelState):
             "total_distance": 0.0
         }
 
-# ====================== 工具2：酒店推荐（提取房价） ======================
+# ====================== 工具2：酒店推荐（调用子Agent） ======================
 def call_hotel_node(state: TravelState):
-    print("🏨 调用高德API：搜索目的地酒店")
-    city = state.destination
-    if not city:
-        return {
-            "hotel_result": "无法推荐：缺少目的地城市",
-            "hotel_price_list": []
-        }
+    print("🏨 启动酒店推荐子Agent，生成Top3高评分酒店")
     
-    try:
-        params = {
-            "key": GAODE_API_KEY,
-            "keywords": "酒店",
-            "city": city,
-            "offset": 5,
-            "output": "json",
-            "extensions": "all"
-        }
-        response = requests.get(GAODE_POI_URL, params=params, timeout=10)
-        data = response.json()
-        
-        price_list = []
-        if data.get("status") == "1" and len(data.get("pois", [])) > 0:
-            hotels = data["pois"]
-            hotel_text = f"【{city} 高性价比酒店推荐】\n"
-            for i, hotel in enumerate(hotels[:3], 1):
-                name = hotel.get("name", "未知酒店")
-                address = hotel.get("address", "暂无详细地址")
-                rating = hotel.get("biz_ext", {}).get("rating", "暂无评分")
-                # 提取单晚房价（高德返回字符串，转浮点）
-                price_str = hotel.get("biz_ext", {}).get("price", "0")
-                try:
-                    price = float(price_str)
-                    price_list.append(price)
-                except:
-                    pass
-                hotel_text += f"{i}. {name}\n   📍地址：{address}\n   ⭐评分：{rating}\n"
-        else:
-            hotel_text = f"{city} 未找到酒店信息"
-        
-        return {
-            "hotel_result": hotel_text,
-            "hotel_price_list": price_list
-        }
-    except Exception as e:
-        return {
-            "hotel_result": f"酒店搜索失败：{str(e)}",
-            "hotel_price_list": []
-        }
+    city = state.destination
+    budget = state.user_budget
+    
+    # 调用子Agent
+    hotel_result = hotel_recommend_agent(city, budget, llm)
+    
+    return {
+        "hotel_result": hotel_result
+    }
 
 # ====================== 工具3：行程规划（统计景点数量） ======================
 def call_itinerary_node(state: TravelState):

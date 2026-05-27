@@ -1,6 +1,5 @@
-# app.py - Streamlit 交互式出行 Agent UI
+# app.py - Streamlit 交互式出行 Agent UI（无警告版）
 import streamlit as st
-import json
 from state import TravelState
 from agent import build_travel_agent
 
@@ -23,12 +22,11 @@ with st.sidebar:
     destination = st.text_input("目的地", value="上海", placeholder="例如：上海市浦东新区")
     start_date = st.text_input("出发日期", value="2025-05-01")
     people_count = st.number_input("出行人数", min_value=1, max_value=10, value=2)
+    user_budget = st.selectbox("酒店预算", ["经济型", "舒适型", "高档型", "豪华型"], index=0)
     
-    # 生成按钮
     generate_btn = st.button("🚀 生成出行方案", type="primary", use_container_width=True)
 
-# ---------------------- 加载 Agent ----------------------
-@st.cache_resource
+# ---------------------- 加载 Agent（修复警告） ----------------------
 def load_agent():
     return build_travel_agent()
 
@@ -36,55 +34,48 @@ agent = load_agent()
 
 # ---------------------- 执行 Agent 并展示结果 ----------------------
 if generate_btn:
-    # 1. 组装用户输入
-    user_input = f"我要从{origin}去{destination}，{start_date}出发，{people_count}个人"
+    user_input = f"我要从{origin}去{destination}，{start_date}出发，{people_count}个人，酒店预算{user_budget}"
     
     with st.spinner("🔍 LLM正在解析意图 + 调用高德API生成方案..."):
         try:
-            # 2. 调用 Agent
             result = agent.invoke({
                 "user_input": user_input,
                 "origin": origin,
                 "destination": destination,
                 "start_date": start_date,
                 "people_count": people_count,
+                "user_budget": user_budget,
                 "messages": [user_input]
             })
 
-            # 3. 分模块展示结果（清晰美观）
             st.success("✅ 方案生成完成！")
             st.divider()
 
-            # 基础信息
             st.markdown(f"### 🧾 基础信息")
             st.write(f"**出发地**：{origin}")
             st.write(f"**目的地**：{destination}")
             st.write(f"**出发日期**：{start_date}")
             st.write(f"**出行人数**：{people_count}人")
+            st.write(f"**酒店预算**：{user_budget}")
             st.divider()
 
-            # 交通方案
             st.markdown("### 🚗 交通方案")
             st.text(result["traffic_result"])
             st.divider()
 
-            # 酒店推荐
-            st.markdown("### 🏨 酒店推荐")
+            st.markdown("### 🏨 酒店推荐（Top3 高评分+理由）")
             st.text(result["hotel_result"])
             st.divider()
 
-            # 行程安排
             st.markdown("### 🗺️ 行程安排")
             st.text(result["itinerary_result"])
             st.divider()
 
-            # 预算明细
             st.markdown("### 💰 预算明细")
             st.text(result["budget_result"])
 
         except Exception as e:
             st.error(f"❌ 生成失败：{str(e)}")
 
-# ---------------------- 底部说明 ----------------------
 st.divider()
 st.caption("✅ 基于 LangGraph + 高德API + Streamlit 构建的智能出行Agent")

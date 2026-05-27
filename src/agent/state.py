@@ -10,6 +10,8 @@ class TravelState(BaseModel):
     destination: str = Field(default="", description="目的地")
     start_date: str = Field(default="", description="出发日期")
     people_count: int = Field(default=1, description="出行人数")
+    user_budget: str = Field(default="经济型", description="用户酒店预算：经济型/舒适型/高档型/豪华型") # 🔥 新增
+    
     
     # 核心控制字段
     user_intent: str = Field(default="", description="LLM识别的用户意图")

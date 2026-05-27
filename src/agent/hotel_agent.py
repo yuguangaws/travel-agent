@@ -2,6 +2,7 @@
 import requests
 from settings import GAODE_API_KEY, GAODE_POI_URL
 import json
+from settings import llm
 
 def hotel_recommend_agent(city: str, budget: str, llm):
     """

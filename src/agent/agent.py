@@ -109,6 +109,6 @@ if __name__ == "__main__":
     
     agent = build_travel_agent()
     result = agent.invoke({
-        "user_input": "我要从北京去西藏，5月1日出发，2个人"    })
+        "user_input": "我要从北京去西藏，5月1日出发，2个人，预算为经济型酒店"    })
     
     print(result["final_plan"])
