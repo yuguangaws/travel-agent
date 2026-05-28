@@ -14,3 +14,5 @@
 2. 填写自己的 高德API Key / OpenAI Key
 3. 安装依赖：pip install -r requirements.txt
 4. 启动UI：streamlit run app.py
+
+<img width="3780" height="4713" alt="image" src="https://github.com/user-attachments/assets/4d5c8e38-5b42-4448-8341-e69f0451ccdd" />
