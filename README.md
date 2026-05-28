@@ -15,3 +15,4 @@
 3. 安装依赖：pip install -r requirements.txt
 4. 启动UI：streamlit run app.py
 
+<img width="3044" height="4654" alt="image" src="https://github.com/user-attachments/assets/b8e860d7-8365-4e6d-b81b-c4e0c630ee3b" />
